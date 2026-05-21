@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#3b0066">
+  <title>Brigadistas VDM</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      overflow-x: hidden;
+      background: #1a0030;
+    }
+
+    #bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+      flex-direction: column;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      padding: 18px 14px 40px;
+      min-height: 100vh;
+    }
+
+    .titulo {
+      text-align: center;
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: bold;
+      line-height: 1.5;
+      text-shadow: 0 0 18px rgba(236, 72, 153, 0.9), 0 2px 4px rgba(0,0,0,0.9);
+      margin-bottom: 18px;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 12px;
+      border: 1px solid rgba(236, 72, 153, 0.5);
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .logo {
+      display: block;
+      width: 150px;
+      height: 150px;
+      -o-object-fit: contain;
+      object-fit: contain;
+      border-radius: 14px;
+      margin-bottom: 22px;
+      -webkit-filter: drop-shadow(0 0 18px rgba(139, 92, 246, 0.85));
+      filter: drop-shadow(0 0 18px rgba(139, 92, 246, 0.85));
+    }
+
+    .btn-grid {
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 380px;
+      margin-bottom: 14px;
+    }
+
+    .btn-mapa {
+      width: calc(50% - 5px);
+      display: block;
+      text-align: center;
+      padding: 15px 6px;
+      border-radius: 11px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 0.88rem;
+      color: #fff;
+      background: rgba(90, 40, 170, 0.45);
+      border: 1.5px solid rgba(139, 92, 246, 0.75);
+      margin-bottom: 10px;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-transition: background 0.15s;
+      transition: background 0.15s;
+    }
+
+    .btn-mapa:nth-child(odd) {
+      margin-right: 10px;
+    }
+
+    .btn-mapa:active {
+      background: rgba(139, 92, 246, 0.7);
+    }
+
+    .btn-full {
+      display: block;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      padding: 17px 12px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 12px;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-transition: background 0.15s;
+      transition: background 0.15s;
+    }
+
+    .btn-epica {
+      background: rgba(100, 30, 160, 0.55);
+      border: 1.5px solid rgba(236, 72, 153, 0.85);
+      text-shadow: 0 0 10px rgba(236, 72, 153, 0.7);
+    }
+
+    .btn-epica:active {
+      background: rgba(180, 60, 120, 0.6);
+    }
+
+    .btn-wa {
+      background: rgba(20, 110, 50, 0.55);
+      border: 1.5px solid rgba(37, 211, 102, 0.85);
+      text-shadow: 0 0 10px rgba(37, 211, 102, 0.5);
+    }
+
+    .btn-wa:active {
+      background: rgba(37, 180, 80, 0.5);
+    }
+
+    /* CSS fallback gradient animation (used if WebGL fails) */
+    .gradient-bg {
+      background: linear-gradient(135deg, #1a0030, #6b21a8, #9d174d, #db2777, #6b21a8, #1a0030);
+      background-size: 400% 400%;
+      -webkit-animation: gradShift 10s ease infinite;
+      animation: gradShift 10s ease infinite;
+    }
+
+    @-webkit-keyframes gradShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes gradShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bg"></canvas>
+
+  <div class="container">
+
+    <a href="https://wa.me/5215640900368" class="titulo"
+       target="_blank" rel="noopener noreferrer"
+       style="text-decoration:none; display:block;">
+      Lider Brigadas VDM<br>Alberto García Elizondo
+    </a>
+
+    <a href="https://hcm19.sapsf.com/sf/start/?bplte_company=centrodese&loginMethod=SSO#l/login" target="_blank" rel="noopener noreferrer">
+      <img src="Imagenes/vdm.png" alt="VDM Logo" class="logo">
+    </a>
+
+    <!-- =============================================
+         BOTONES DE MAPAS
+         Para cambiar a qué página va cada botón,
+         edita el href="NombreArchivo.html"
+         ============================================= -->
+    <div class="btn-grid">
+      <a href="MapasFresno.html"    class="btn-mapa">Mapa Fresno</a>    <!-- LINK: página Fresno -->
+      <a href="MapasTlalpan.html"   class="btn-mapa">Mapa Tlalpan</a>   <!-- LINK: página Tlalpan -->
+      <a href="MapasIztacalco.html" class="btn-mapa">Mapa Iztacalco</a> <!-- LINK: página Iztacalco -->
+      <a href="MapasViga.html"      class="btn-mapa">Mapa Viga</a>      <!-- LINK: página Viga -->
+      <a href="MapasZaragoza.html"  class="btn-mapa">Mapa Zaragoza</a>  <!-- LINK: página Zaragoza -->
+      <a href="MapasMixcoac.html"   class="btn-mapa">Mapa Mixcoac</a>   <!-- LINK: página Mixcoac -->
+    </div>
+
+    <!-- =============================================
+         BOTONES DE ENCUESTAS / FORMULARIOS
+         Para cambiar el link de cada botón,
+         edita el href="https://..." de cada <a>
+         ============================================= -->
+
+    <!-- LINK: Encuesta clientes ICE 2026 -->
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSffIHtonMBPPgRnUiW0WCb_N_s06U673pwgKLRKptRvDiHnqQ/viewform?usp=header"
+       class="btn-full btn-epica" target="_blank" rel="noopener noreferrer">
+      Encuesta de clientes que no cumplen ICE 2026
+    </a>
+
+    <!-- LINK: Encuesta de seguimiento de iniciativa temporal -->
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeClFi2Cgg4teQg4iazO6fIg5bhu-iC2jnmWk2hf7BW88PM3A/viewform?usp=header"
+       class="btn-full btn-epica" target="_blank" rel="noopener noreferrer">
+      Encuesta de seguimiento de iniciativa temporal
+    </a>
+
+    <!-- =============================================
+         BOTÓN WHATSAPP
+         Para cambiar el número edita: wa.me/NUMERO
+         El número debe incluir código de país (52 = México)
+         ============================================= -->
+
+    <!-- LINK: WhatsApp para reportar errores -->
+    <a href="https://wa.me/5215548651521"
+       class="btn-full btn-wa" target="_blank" rel="noopener noreferrer">
+      Reportes de errores EPICAPP
+    </a>
+
+  </div>
+
+  <script>
+    (function () {
+      var canvas = document.getElementById('bg');
+      var gl = null;
+
+      try {
+        gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      } catch (e) {}
+
+      if (!gl) {
+        // No WebGL — apply CSS gradient fallback on body
+        canvas.style.display = 'none';
+        document.body.classList.add('gradient-bg');
+        return;
+      }
+
+      /* ---------- Shaders ---------- */
+      var VS = [
+        'attribute vec2 a_pos;',
+        'void main(){gl_Position=vec4(a_pos,0.0,1.0);}'
+      ].join('\n');
+
+      /*
+       * Abismo violeta/rosa — cáusticas con domain warping en 5 capas.
+       * Técnica: cada capa desplaza las UV usando senos a frecuencias
+       * crecientes (1.2 → 8.0) con amplitud decreciente. El resultado
+       * final pasa por abs(sin(x))*abs(sin(y)) para crear manchas
+       * brillantes orgánicas como luz filtrándose bajo el agua.
+       */
+      var FS = [
+        'precision mediump float;',
+        'uniform float u_t;',
+        'uniform vec2 u_r;',
+
+        /* One domain-warp stage: displaces p using sine at scale s */
+        'vec2 fw(vec2 p, float s, float t) {',
+        '  float inv = 0.3 / s;',
+        '  return p + vec2(',
+        '    (sin(p.y*s + t + 1.30) + sin(p.x*s*0.6 + t*0.70)) * inv,',
+        '    (sin(p.x*s - t*0.90 + 2.10) + sin(p.y*s*0.6 - t*0.60)) * inv',
+        '  );',
+        '}',
+
+        'void main(){',
+        '  vec2 uv = gl_FragCoord.xy / u_r * 2.0 - 1.0;',
+        '  uv.x *= u_r.x / u_r.y;',
+
+        /* Slow time — dreamy movement like Abismo */
+        '  float t = u_t * 0.14;',
+        '  vec2 p = uv;',
+
+        /* 5 warp layers — progressively finer detail */
+        '  p = fw(p, 1.2, t);',
+        '  p = fw(p, 2.0, t);',
+        '  p = fw(p, 3.5, t);',
+        '  p = fw(p, 5.5, t);',
+        '  p = fw(p, 8.0, t);',
+
+        /* Caustic intensity: bright ridges where both axes peak */
+        '  float cx = abs(sin(p.x * 2.8));',
+        '  float cy = abs(sin(p.y * 2.8));',
+        '  float raw = cx * cy;',
+        '  float ii  = pow(raw, 0.42);',   /* soften, expand bright areas */
+
+        /* Color palette: void → violet → pink → bright highlight */
+        '  vec3 void_  = vec3(0.03, 0.01, 0.09);',
+        '  vec3 violet = vec3(0.40, 0.16, 0.75);',
+        '  vec3 pink   = vec3(0.86, 0.20, 0.55);',
+        '  vec3 bright = vec3(0.95, 0.78, 1.00);',
+
+        '  vec3 col = mix(void_,  violet, ii * 0.85);',
+        '  col      = mix(col,    pink,   pow(ii, 1.8) * 1.3);',
+        '  col      = mix(col,    bright, pow(ii, 5.0) * 0.55);',
+
+        /* Deep Abismo vignette — edges go black */
+        '  float dist = length(uv);',
+        '  float vig  = 1.0 - clamp(dist * 0.82, 0.0, 1.0);',
+        '  vig = pow(vig, 1.9);',
+        '  col *= vig;',
+
+        '  gl_FragColor = vec4(col, 1.0);',
+        '}'
+      ].join('\n');
+
+      function mkShader(type, src) {
+        var s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+      }
+
+      var prog = gl.createProgram();
+      gl.attachShader(prog, mkShader(gl.VERTEX_SHADER, VS));
+      gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, FS));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+
+      var buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER,
+        new Float32Array([-1,-1, 1,-1, -1,1, 1,1]),
+        gl.STATIC_DRAW);
+
+      var aPos = gl.getAttribLocation(prog, 'a_pos');
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+      var uT = gl.getUniformLocation(prog, 'u_t');
+      var uR = gl.getUniformLocation(prog, 'u_r');
+
+      /* Render at reduced pixel density — saves GPU on old devices */
+      function resize() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        /* Also cap resolution to avoid huge canvases on tablets */
+        var w = Math.min(Math.floor(window.innerWidth  * dpr), 1080);
+        var h = Math.min(Math.floor(window.innerHeight * dpr), 1920);
+        canvas.width  = w;
+        canvas.height = h;
+        gl.viewport(0, 0, w, h);
+        gl.uniform2f(uR, w, h);
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+
+      /* Cap at 30 fps — smooth but gentle on old phones */
+      var lastTs  = 0;
+      var FRAME_MS = 1000 / 30;
+
+      function draw(ts) {
+        if (ts - lastTs >= FRAME_MS) {
+          lastTs = ts;
+          gl.uniform1f(uT, ts * 0.001);
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+        requestAnimationFrame(draw);
+      }
+
+      requestAnimationFrame(draw);
+    })();
+  </script>
+
+</body>
+</html>
