@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#000a1f">
+  <title>Capacitación ICE – Brigadistas VDM</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      background: #00050f;
+    }
+
+    #bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    .btn-back {
+      position: fixed;
+      top: 16px; left: 16px;
+      z-index: 2;
+      color: #fff;
+      text-decoration: none;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.88rem;
+      font-weight: bold;
+      background: rgba(20, 80, 210, 1);
+      border: 2px solid #50aaff;
+      border-radius: 8px;
+      padding: 7px 14px;
+      text-shadow: 0 0 10px rgba(120, 200, 255, 0.9);
+      box-shadow: 0 0 14px rgba(40, 120, 255, 0.7), inset 0 0 8px rgba(120,180,255,0.15);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .btn-back:hover {
+      background: rgba(30, 100, 240, 1);
+      box-shadow: 0 0 22px rgba(40, 130, 255, 1), inset 0 0 10px rgba(120,200,255,0.25);
+    }
+
+    .page-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 20px 48px;
+      min-height: 100vh;
+      gap: 36px;
+    }
+
+    .hero-img {
+      display: block;
+      width: min(88vw, 380px);
+      height: auto;
+      border-radius: 18px;
+      border: 2px solid rgba(80, 160, 255, 0.65);
+      box-shadow:
+        0 0 18px rgba(40, 120, 255, 0.7),
+        0 0 40px rgba(40, 120, 255, 0.35),
+        0 0 80px rgba(20, 80, 220, 0.2);
+      object-fit: contain;
+    }
+
+    .download-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .download-title {
+      color: #90ccff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 0.06em;
+      text-shadow: 0 0 12px rgba(80, 160, 255, 0.8);
+      text-transform: uppercase;
+    }
+
+    .btn-download {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      color: #fff;
+      text-decoration: none;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.95rem;
+      font-weight: bold;
+      background: rgba(18, 70, 195, 0.88);
+      border: 2px solid #4899ee;
+      border-radius: 10px;
+      padding: 13px 20px;
+      text-shadow: 0 0 8px rgba(100, 180, 255, 0.8);
+      box-shadow: 0 0 12px rgba(40, 110, 255, 0.55), inset 0 0 8px rgba(100,160,255,0.12);
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+      cursor: pointer;
+    }
+    .btn-download:hover {
+      background: rgba(25, 90, 230, 0.95);
+      box-shadow: 0 0 22px rgba(60, 140, 255, 0.9), inset 0 0 12px rgba(120,200,255,0.2);
+    }
+    .btn-download:active {
+      transform: scale(0.97);
+    }
+
+    .dl-icon {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<a href="inicio.html" class="btn-back">← Inicio</a>
+
+<div class="page-content">
+  <img src="Imagenes/conejoice.jpg" alt="Conejo ICE" class="hero-img">
+
+  <div class="download-section">
+    <p class="download-title">Descargar Manuales</p>
+
+    <a href="Archivos/ManualdelaApp.pdf" download="ManualdelaApp.pdf" target="_blank" class="btn-download">
+      <span class="dl-icon">⬇</span>
+      Manual EPICAAPP
+    </a>
+
+    <a href="Archivos/ManualICECompleto.pdf" download="ManualICECompleto.pdf" target="_blank" class="btn-download">
+      <span class="dl-icon">⬇</span>
+      Manual ICE completo
+    </a>
+
+    <a href="Archivos/ICESimplificado.pdf" download="ICESimplificado.pdf" target="_blank" class="btn-download">
+      <span class="dl-icon">⬇</span>
+      Manual ICE simplificado
+    </a>
+  </div>
+</div>
+
+<script>
+(function () {
+  const canvas = document.getElementById('bg');
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+
+  const VS = `
+    attribute vec2 a_pos;
+    void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+  `;
+
+  const FS = `
+    precision mediump float;
+    uniform float u_t;
+    uniform vec2  u_res;
+
+    float rnd(vec2 p) {
+      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+    }
+
+    vec3 layer(vec2 uv, float scale, float spd, float seed) {
+      vec2 g  = uv * scale;
+      vec2 id = floor(g);
+      vec2 lv = fract(g);
+
+      float h1 = rnd(id + seed);
+      float h2 = rnd(id + seed + vec2(0.13, 0.27));
+      float h3 = rnd(id + seed + vec2(0.37, 0.61));
+
+      if (h1 > 0.60) return vec3(0.0);
+
+      float phase = h1 * 6.2832;
+      vec2 drift = vec2(
+        sin(u_t * spd + phase)               * 0.19,
+        cos(u_t * spd * 0.71 + phase + 2.1)  * 0.19
+      );
+
+      float sz = 0.22 + h2 * 0.46 + sin(u_t * 0.35 + h3 * 6.2832) * 0.03;
+      vec2  p  = lv - 0.5 - drift;
+
+      if (abs(p.x) > sz * 0.5 || abs(p.y) > sz * 0.5) return vec3(0.0);
+
+      float bright = 0.25 + h2 * 0.75;
+
+      vec3 col;
+      if      (h3 < 0.25) col = vec3(0.20, 0.65, 0.95);
+      else if (h3 < 0.50) col = vec3(0.08, 0.35, 0.85);
+      else if (h3 < 0.75) col = vec3(0.04, 0.20, 0.60);
+      else                col = vec3(0.02, 0.08, 0.38);
+
+      return col * bright;
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / u_res;
+      float ar = u_res.x / u_res.y;
+      uv.x *= ar;
+
+      vec3 col = vec3(0.01, 0.02, 0.07);
+
+      col = max(col, layer(uv,  5.5, 0.22,  0.00));
+      col = max(col, layer(uv,  9.5, 0.38, 17.31));
+      col = max(col, layer(uv, 16.0, 0.55, 31.73));
+      col = max(col, layer(uv, 26.0, 0.80, 53.09));
+      col = max(col, layer(uv, 42.0, 1.15, 89.47));
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  function compile(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER,   VS));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER,
+    new Float32Array([-1,-1, 1,-1, -1,1, 1,1]),
+    gl.STATIC_DRAW);
+
+  const loc = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  const uT   = gl.getUniformLocation(prog, 'u_t');
+  const uRes = gl.getUniformLocation(prog, 'u_res');
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function tick(t) {
+    gl.uniform1f(uT,   t * 0.001);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+
+</body>
+</html>
