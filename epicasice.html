@@ -47,12 +47,27 @@
     @media (max-width: 480px) {
       #tour-btn { font-size: 1.15rem; padding: 22px 34px; }
     }
+    #back-btn {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 10;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px; border-radius: 12px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.30);
+      color: rgba(255,255,255,0.80);
+      font: 600 0.82rem/1 system-ui, sans-serif;
+      letter-spacing: 0.08em; text-decoration: none;
+      backdrop-filter: blur(8px);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    #back-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.5); }
   </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="tap">Toca para activar el movimiento</div>
 <a href="recorrido-virtual.html" id="tour-btn">&#9654; Recorrido 3D ICE 2026</a>
+<a href="CapacitacionICE.html" id="back-btn">&#8592; Regresar</a>
 
 <script>
 /* ── WebGL setup ─────────────────────────────────────────────── */
