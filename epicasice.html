@@ -61,11 +61,20 @@
       transition: background 0.2s, border-color 0.2s;
     }
     #back-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.5); }
+    #logo-ice {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -195px);
+      z-index: 10;
+      width: min(260px, 55vw);
+      pointer-events: none;
+      filter: drop-shadow(0 0 18px rgba(255,255,255,0.18));
+    }
   </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="tap">Toca para activar el movimiento</div>
+<img src="Imagenes/ice.png" id="logo-ice" alt="ICE">
 <a href="recorrido-virtual.html" id="tour-btn">&#9654; Recorrido 3D ICE 2026</a>
 <a href="CapacitacionICE.html" id="back-btn">&#8592; Regresar</a>
 
