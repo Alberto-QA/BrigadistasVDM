@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Recorrido Virtual</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; touch-action: none; }
+
+    #loading {
+      position: fixed; inset: 0; z-index: 200; background: #000d1f;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 18px; color: #fff;
+      font-family: system-ui, sans-serif;
+    }
+    #loading p { font-size: 0.75rem; letter-spacing: 0.22em; opacity: 0.45; font-weight: 500; }
+    #prog-wrap { width: 160px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+    #prog { height: 100%; width: 0%; background: #4ab4ff; transition: width 0.15s; }
+
+    #back {
+      position: fixed; top: 14px; left: 14px; z-index: 100;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: 12px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.22);
+      color: #fff; font: 600 0.78rem/1 system-ui, sans-serif;
+      letter-spacing: 0.06em; text-decoration: none;
+      backdrop-filter: blur(8px);
+    }
+
+    #hint {
+      position: fixed; bottom: 174px; left: 50%; transform: translateX(-50%);
+      z-index: 50; pointer-events: none;
+      color: rgba(255,255,255,0.32); font: 400 0.68rem system-ui, sans-serif;
+      letter-spacing: 0.18em; white-space: nowrap;
+      transition: opacity 0.9s;
+    }
+    #hint.gone { opacity: 0; }
+
+    /* Joystick izquierdo */
+    #joy {
+      position: fixed; bottom: 28px; left: 28px; z-index: 60;
+      width: 120px; height: 120px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.14);
+      touch-action: none; user-select: none;
+    }
+    #joy-k {
+      position: absolute; width: 50px; height: 50px; border-radius: 50%;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: radial-gradient(circle at 35% 35%, rgba(160,220,255,0.65), rgba(55,145,255,0.38));
+      border: 1.5px solid rgba(100,190,255,0.6);
+      box-shadow: 0 0 14px rgba(80,170,255,0.25);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <p>CARGANDO MODELO</p>
+  <div id="prog-wrap"><div id="prog"></div></div>
+</div>
+
+<a href="epicasice.html" id="back">← Salir</a>
+<div id="hint">ARRASTRA LA PANTALLA DERECHA PARA MIRAR</div>
+<div id="joy"><div id="joy-k"></div></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+/* ── Renderer ─────────────────────────────────────────────────── */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight);
+  cam.aspect = innerWidth / innerHeight;
+  cam.updateProjectionMatrix();
+});
+
+/* ── Scene ────────────────────────────────────────────────────── */
+const scene = new THREE.Scene();
+
+/* ── Cámara primera persona ───────────────────────────────────── */
+const cam = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 3000);
+cam.position.set(0, 1.7, 8);
+
+/* ── Luces ────────────────────────────────────────────────────── */
+scene.add(new THREE.AmbientLight(0xc8d8ff, 0.8));
+
+const sun = new THREE.DirectionalLight(0xfff6e0, 2.2);
+sun.position.set(60, 90, -50);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -80, right: 80, top: 80, bottom: -80, near: 0.5, far: 400 });
+scene.add(sun);
+
+const fill = new THREE.DirectionalLight(0x88aaf0, 0.4);
+fill.position.set(-40, 25, 70);
+scene.add(fill);
+
+/* ── Domo de cielo — shader procedural ───────────────────────── */
+const skyMesh = new THREE.Mesh(
+  new THREE.SphereGeometry(2000, 32, 16),
+  new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    depthWrite: false,
+    vertexShader: `
+      varying vec3 vD;
+      void main() {
+        vD = normalize(position);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vD;
+      void main() {
+        vec3 d = normalize(vD);
+        float h = d.y;
+        vec3 col;
+        if (h >= 0.0) {
+          vec3 hz  = vec3(0.60, 0.83, 1.00);
+          vec3 mid = vec3(0.22, 0.52, 0.94);
+          vec3 top = vec3(0.06, 0.17, 0.58);
+          float t  = pow(h, 0.55);
+          col = mix(hz, mix(mid, top, t), t);
+        } else {
+          vec3 hz  = vec3(0.60, 0.83, 1.00);
+          vec3 gnd = vec3(0.26, 0.33, 0.17);
+          col = mix(hz, gnd, clamp(-h * 5.0, 0.0, 1.0));
+        }
+        /* Sol */
+        vec3 sunDir = normalize(vec3(0.50, 0.70, -0.50));
+        float sd = dot(d, sunDir);
+        col += vec3(1.00, 0.92, 0.70) * pow(max(sd, 0.0), 7.0) * 0.30;
+        col += vec3(1.00, 0.97, 0.88) * smoothstep(0.9997, 1.0, sd) * 4.0;
+        /* Resplandor en horizonte */
+        float hg = pow(max(1.0 - abs(h) * 2.5, 0.0), 3.0) * 0.14;
+        col += vec3(0.90, 0.84, 0.62) * hg;
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+  })
+);
+scene.add(skyMesh);
+
+/* ── Carga del modelo GLB ─────────────────────────────────────── */
+let floorY = 0;
+
+new GLTFLoader().load(
+  'Modelos3D/modelo.glb',
+  gltf => {
+    const mdl = gltf.scene;
+    const box = new THREE.Box3().setFromObject(mdl);
+    const sz  = box.getSize(new THREE.Vector3());
+    const sc  = 20 / Math.max(sz.x, sz.y, sz.z);
+    const cen = box.getCenter(new THREE.Vector3());
+
+    mdl.scale.setScalar(sc);
+    mdl.position.set(-cen.x * sc, -box.min.y * sc, -cen.z * sc);
+    mdl.traverse(c => { if (c.isMesh) { c.castShadow = c.receiveShadow = true; } });
+    scene.add(mdl);
+
+    /* Posición inicial de la cámara frente al modelo */
+    const sb = new THREE.Box3().setFromObject(mdl);
+    floorY = sb.min.y;
+    const mc = sb.getCenter(new THREE.Vector3());
+    cam.position.set(mc.x, floorY + 1.7, sb.max.z + 3.5);
+
+    document.getElementById('loading').style.display = 'none';
+    setTimeout(() => document.getElementById('hint').classList.add('gone'), 5500);
+  },
+  xhr => {
+    if (xhr.total)
+      document.getElementById('prog').style.width = (xhr.loaded / xhr.total * 100) + '%';
+  },
+  err => {
+    document.getElementById('loading').innerHTML =
+      '<p style="color:#f44;letter-spacing:.08em">ERROR AL CARGAR EL MODELO</p>';
+    console.error(err);
+  }
+);
+
+/* ── Control de cámara — mirar ────────────────────────────────── */
+let yaw = 0, pitch = 0;
+let lookId = null, lx = 0, ly = 0;
+
+/* Toque en la mitad derecha de la pantalla = mirar */
+document.addEventListener('touchstart', e => {
+  for (const t of e.changedTouches) {
+    if (lookId === null && t.clientX > innerWidth * 0.42) {
+      lookId = t.identifier; lx = t.clientX; ly = t.clientY;
+    }
+  }
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    if (t.identifier !== lookId) continue;
+    yaw   -= (t.clientX - lx) * 0.0038;
+    pitch -= (t.clientY - ly) * 0.0038;
+    pitch  = Math.max(-1.38, Math.min(1.38, pitch));
+    lx = t.clientX; ly = t.clientY;
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', e => {
+  for (const t of e.changedTouches)
+    if (t.identifier === lookId) lookId = null;
+});
+
+/* Desktop: clic para pointer-lock, ratón para mirar */
+renderer.domElement.addEventListener('click', () =>
+  renderer.domElement.requestPointerLock?.()
+);
+document.addEventListener('mousemove', e => {
+  if (document.pointerLockElement !== renderer.domElement) return;
+  yaw   -= e.movementX * 0.002;
+  pitch -= e.movementY * 0.002;
+  pitch  = Math.max(-1.38, Math.min(1.38, pitch));
+});
+
+/* Teclado desktop */
+const keys = {};
+addEventListener('keydown', e => { keys[e.code] = true; });
+addEventListener('keyup',   e => { keys[e.code] = false; });
+
+/* ── Joystick virtual ─────────────────────────────────────────── */
+const joyEl = document.getElementById('joy');
+const joyK  = document.getElementById('joy-k');
+const JR = 52;
+let jx = 0, jy = 0, jId = null;
+
+joyEl.addEventListener('touchstart', e => {
+  if (jId !== null) return;
+  jId = e.changedTouches[0].identifier;
+  e.stopPropagation();
+}, { passive: true });
+
+joyEl.addEventListener('touchmove', e => {
+  for (const t of e.changedTouches) {
+    if (t.identifier !== jId) continue;
+    const r  = joyEl.getBoundingClientRect();
+    let ox = t.clientX - (r.left + r.width  / 2);
+    let oy = t.clientY - (r.top  + r.height / 2);
+    const d = Math.hypot(ox, oy);
+    if (d > JR) { ox *= JR / d; oy *= JR / d; }
+    jx = ox / JR;
+    jy = oy / JR;
+    joyK.style.transform = `translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px))`;
+  }
+  e.stopPropagation();
+}, { passive: true });
+
+function jReset() {
+  jId = null; jx = jy = 0;
+  joyK.style.transform = 'translate(-50%, -50%)';
+}
+joyEl.addEventListener('touchend',    jReset, { passive: true });
+joyEl.addEventListener('touchcancel', jReset, { passive: true });
+
+/* ── Loop de render ───────────────────────────────────────────── */
+const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
+const _yAxis = new THREE.Vector3(0, 1, 0);
+const _move  = new THREE.Vector3();
+const SPEED  = 5; /* m/s */
+let last = 0;
+
+function frame(ts) {
+  requestAnimationFrame(frame);
+  const dt = Math.min((ts - last) / 1000, 0.05);
+  last = ts;
+
+  /* Rotación de cámara */
+  _euler.set(pitch, yaw, 0);
+  cam.quaternion.setFromEuler(_euler);
+
+  /* Movimiento: joystick (jx/jy) + teclado */
+  let mx = jx, mz = jy;
+  if (keys.KeyW || keys.ArrowUp)    mz = -1;
+  if (keys.KeyS || keys.ArrowDown)  mz =  1;
+  if (keys.KeyA || keys.ArrowLeft)  mx = -1;
+  if (keys.KeyD || keys.ArrowRight) mx =  1;
+
+  if (mx || mz) {
+    _move.set(mx, 0, mz);
+    if (_move.length() > 1) _move.normalize();
+    _move.applyAxisAngle(_yAxis, yaw);
+    cam.position.addScaledVector(_move, SPEED * dt);
+  }
+
+  /* Mantener altura de ojos constante */
+  cam.position.y = floorY + 1.7;
+
+  /* Cielo sigue a la cámara */
+  skyMesh.position.copy(cam.position);
+
+  renderer.render(scene, cam);
+}
+requestAnimationFrame(frame);
+</script>
+
+</body>
+</html>

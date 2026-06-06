@@ -21,11 +21,25 @@
       z-index: 9;
     }
     #tap.gone { opacity: 0; pointer-events: none; }
+    #tour-btn {
+      position: fixed; bottom: 22px; right: 22px; z-index: 10;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 22px; border-radius: 14px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.88);
+      font: 600 0.8rem/1 system-ui, sans-serif;
+      letter-spacing: 0.08em; text-decoration: none;
+      backdrop-filter: blur(8px);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    #tour-btn:hover { background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.38); }
   </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="tap">Toca para activar el movimiento</div>
+<a href="recorrido-virtual.html" id="tour-btn">&#9654; Recorrido Virtual 3D</a>
 
 <script>
 /* ── WebGL setup ─────────────────────────────────────────────── */
