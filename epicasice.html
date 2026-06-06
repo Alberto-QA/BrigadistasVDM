@@ -21,11 +21,18 @@
       z-index: 9;
     }
     #tap.gone { opacity: 0; pointer-events: none; }
+    #ui {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 28px; pointer-events: none;
+    }
+    #logo-ice {
+      width: min(260px, 55vw);
+      filter: drop-shadow(0 0 18px rgba(255,255,255,0.18));
+    }
     #tour-btn {
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
+      pointer-events: all;
       display: inline-flex; align-items: center; justify-content: center; gap: 14px;
       padding: 28px 52px; border-radius: 20px;
       background: rgba(255,255,255,0.22);
@@ -34,22 +41,13 @@
       font: 700 1.6rem/1 system-ui, sans-serif;
       letter-spacing: 0.1em; text-decoration: none;
       backdrop-filter: blur(12px);
-      text-align: center;
       white-space: nowrap;
-      transition: background 0.25s, border-color 0.25s, transform 0.2s;
+      transition: background 0.25s, border-color 0.25s;
       box-shadow: 0 0 40px rgba(255,255,255,0.06);
     }
-    #tour-btn:hover {
-      background: rgba(255,255,255,0.30);
-      border-color: rgba(255,255,255,0.70);
-      transform: translate(-50%, -52%);
-    }
-    @media (max-width: 480px) {
-      #tour-btn { font-size: 1.15rem; padding: 22px 34px; }
-    }
+    #tour-btn:hover { background: rgba(255,255,255,0.30); border-color: rgba(255,255,255,0.70); }
     #back-btn {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      z-index: 10;
+      pointer-events: all;
       display: inline-flex; align-items: center; gap: 8px;
       padding: 12px 28px; border-radius: 12px;
       background: rgba(255,255,255,0.10);
@@ -61,22 +59,19 @@
       transition: background 0.2s, border-color 0.2s;
     }
     #back-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.5); }
-    #logo-ice {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -195px);
-      z-index: 10;
-      width: min(260px, 55vw);
-      pointer-events: none;
-      filter: drop-shadow(0 0 18px rgba(255,255,255,0.18));
+    @media (max-width: 480px) {
+      #tour-btn { font-size: 1.15rem; padding: 22px 34px; }
     }
   </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="tap">Toca para activar el movimiento</div>
-<img src="Imagenes/ice.png" id="logo-ice" alt="ICE">
-<a href="recorrido-virtual.html" id="tour-btn">&#9654; Recorrido 3D ICE 2026</a>
-<a href="CapacitacionICE.html" id="back-btn">&#8592; Regresar</a>
+<div id="ui">
+  <img src="Imagenes/ice.png" id="logo-ice" alt="ICE">
+  <a href="recorrido-virtual.html" id="tour-btn">&#9654; Recorrido 3D ICE 2026</a>
+  <a href="CapacitacionICE.html" id="back-btn">&#8592; Regresar</a>
+</div>
 
 <script>
 /* ── WebGL setup ─────────────────────────────────────────────── */
