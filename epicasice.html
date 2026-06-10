@@ -8,19 +8,6 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #000; overflow: hidden; touch-action: none; }
     canvas { display: block; width: 100vw; height: 100vh; }
-    #tap {
-      position: fixed; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      color: rgba(255,255,255,0.5);
-      font: 600 0.85rem/1 system-ui, sans-serif;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      pointer-events: all;
-      cursor: pointer;
-      transition: opacity 0.6s;
-      z-index: 9;
-    }
-    #tap.gone { opacity: 0; pointer-events: none; }
     #ui {
       position: fixed; inset: 0; z-index: 10;
       display: flex; flex-direction: column;
@@ -35,218 +22,748 @@
       pointer-events: all;
       display: inline-flex; align-items: center; justify-content: center; gap: 14px;
       padding: 28px 52px; border-radius: 20px;
-      background: rgba(255,255,255,0.22);
-      border: 2px solid rgba(255,255,255,0.55);
+      background: rgba(204, 10, 20, 0.88);
+      border: 2px solid rgba(255, 100, 100, 0.80);
       color: #fff;
       font: 700 1.6rem/1 system-ui, sans-serif;
       letter-spacing: 0.1em; text-decoration: none;
       backdrop-filter: blur(12px);
       white-space: nowrap;
       transition: background 0.25s, border-color 0.25s;
-      box-shadow: 0 0 40px rgba(255,255,255,0.06);
+      box-shadow: 0 0 40px rgba(220, 0, 0, 0.45);
     }
-    #tour-btn:hover { background: rgba(255,255,255,0.30); border-color: rgba(255,255,255,0.70); }
+    #tour-btn:hover { background: rgba(220, 15, 25, 0.98); border-color: rgba(255, 140, 140, 0.95); }
     #back-btn {
       pointer-events: all;
       display: inline-flex; align-items: center; gap: 8px;
       padding: 12px 28px; border-radius: 12px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.30);
-      color: rgba(255,255,255,0.80);
+      background: rgba(160, 8, 16, 0.80);
+      border: 1px solid rgba(255, 100, 100, 0.60);
+      color: #fff;
       font: 600 0.82rem/1 system-ui, sans-serif;
       letter-spacing: 0.08em; text-decoration: none;
       backdrop-filter: blur(8px);
       transition: background 0.2s, border-color 0.2s;
     }
-    #back-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.5); }
+    #back-btn:hover { background: rgba(200, 12, 22, 0.92); border-color: rgba(255, 130, 130, 0.85); }
     @media (max-width: 480px) {
       #tour-btn { font-size: 1.15rem; padding: 22px 34px; }
     }
+    #guide-btn {
+      pointer-events: all;
+      display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+      padding: 20px 44px; border-radius: 16px;
+      background: rgba(204, 10, 20, 0.82);
+      border: 2px solid rgba(255, 100, 100, 0.72);
+      color: #fff;
+      font: 700 1.2rem/1 system-ui, sans-serif;
+      letter-spacing: 0.1em; cursor: pointer;
+      backdrop-filter: blur(12px);
+      white-space: nowrap;
+      transition: background 0.2s, border-color 0.2s;
+      box-shadow: 0 0 30px rgba(220, 0, 0, 0.35);
+    }
+    #guide-btn:hover { background: rgba(220, 15, 25, 0.96); border-color: rgba(255, 140, 140, 0.92); }
+    #guide-overlay {
+      display: none; position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,0.90); backdrop-filter: blur(6px);
+      overflow-y: auto; padding: 20px;
+    }
+    #guide-overlay.open { display: block; }
+    #guide-panel {
+      background: #111827; border-radius: 16px;
+      max-width: 820px; margin: 0 auto; padding: 28px 36px;
+      font: 400 0.93rem/1.72 system-ui, sans-serif; color: #d1d9ef;
+    }
+    #guide-close {
+      float: right; background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.22); color: #fff;
+      border-radius: 8px; padding: 7px 18px;
+      cursor: pointer; font: 600 0.8rem system-ui; margin-bottom: 14px;
+    }
+    #guide-close:hover { background: rgba(255,255,255,0.22); }
+    #guide-body h1 { color: #60a5fa; font-size: 1.35rem; margin: 1.6em 0 0.5em; padding-bottom: 0.3em; border-bottom: 1px solid rgba(96,165,250,0.25); }
+    #guide-body h1:first-child { margin-top: 0.2em; }
+    #guide-body h2 { color: #93c5fd; font-size: 1.08rem; margin: 1.2em 0 0.4em; }
+    #guide-body h3 { color: #bfdbfe; font-size: 0.97rem; margin: 1em 0 0.3em; }
+    #guide-body p { margin: 0.5em 0; }
+    #guide-body strong { color: #f0f4ff; }
+    #guide-body em { color: #cbd5e1; }
+    #guide-body blockquote { margin: 0.8em 0; padding: 0.6em 1.1em; border-left: 3px solid #3b82f6; background: rgba(59,130,246,0.09); border-radius: 0 8px 8px 0; }
+    #guide-body blockquote p { margin: 0; }
+    #guide-body ul, #guide-body ol { padding-left: 1.6em; margin: 0.4em 0; }
+    #guide-body li { margin: 0.22em 0; }
+    #guide-body hr { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.8em 0; }
+    #guide-body table { width: 100%; border-collapse: collapse; margin: 0.9em 0; font-size: 0.87rem; }
+    #guide-body th { background: rgba(59,130,246,0.18); color: #93c5fd; padding: 8px 10px; border: 1px solid rgba(59,130,246,0.25); text-align: left; }
+    #guide-body td { padding: 6px 10px; border: 1px solid rgba(255,255,255,0.08); vertical-align: top; }
+    #guide-body tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+    @media (max-width: 520px) {
+      #guide-panel { padding: 18px 14px; border-radius: 10px; }
+      #guide-body table { font-size: 0.76rem; }
+      #guide-body th, #guide-body td { padding: 5px 7px; }
+    }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="tap">Toca para activar el movimiento</div>
 <div id="ui">
   <img src="Imagenes/ice.png" id="logo-ice" alt="ICE">
   <a href="recorrido-virtual.html" id="tour-btn">&#9654; Recorrido 3D ICE 2026</a>
+  <button id="guide-btn">&#128218; Curso ICE 2026</button>
   <a href="CapacitacionICE.html" id="back-btn">&#8592; Regresar</a>
 </div>
 
+<div id="guide-overlay">
+  <div id="guide-panel">
+    <button id="guide-close">&#10005; Cerrar</button>
+    <div id="guide-body"></div>
+    <div style="text-align:center; margin-top:2.5em; padding-top:1.5em; border-top:1px solid rgba(255,255,255,0.1);">
+      <button id="guide-close-bottom" style="
+        background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.35);
+        color: #fff; border-radius: 12px; padding: 14px 40px; cursor: pointer;
+        font: 600 0.9rem/1 system-ui, sans-serif; letter-spacing: 0.08em;
+        transition: background 0.2s;">&#8592; Regresar al inicio</button>
+    </div>
+  </div>
+</div>
+
+<script type="text/x-markdown" id="md-course">
+# CURSO ICE 2026 — CANAL TRADICIONAL
+### Guía simplificada · Coca-Cola FEMSA · Tiendas de Barrio
+
+**Cómo usar este curso:** Son 9 módulos cortos. Cada uno responde 4 preguntas: ¿qué es?, ¿cuánto vale?, ¿cómo se gana?, ¿cómo se pierde? Al final de cada módulo hay un mini-quiz para verificar que quedó claro. El Módulo 8 es la práctica: el recorrido completo del auditor (y es el guion natural para el museo virtual).
+
+> **La idea más importante de todo el curso:** En 2026 el ENFRIADOR vale casi la mitad de la calificación (40 de 100 en no enrejados, 52 en enrejados). Si la tienda solo pudiera cuidar una cosa, que cuide el frío.
+
+---
+
+# MÓDULO 0 — LAS REGLAS DEL JUEGO
+
+## ¿Qué es ICE?
+Es la auditoría que mide qué tan bien está ejecutado el punto de venta. Un auditor visita la tienda y califica 7 pilares. La suma da una nota sobre **100 puntos + 10 de bono**.
+
+## ¿Qué tiendas se miden?
+**Tiendas de barrio** (changarros, abarrotes, misceláneas):
+- Menos de 100 m², 0-1 caja registradora
+- Es **auditable** si el 50% o más del local es venta de abarrotes Y vende mínimo 5 categorías de consumo humano (lácteos, botanas, refrescos, etc.)
+
+## Los 2 tipos de tienda (esto cambia TODA la calificación)
+
+| Tipo | ¿Cómo lo identificas? |
+|---|---|
+| **NO ENREJADO (NE)** | El cliente puede llegar y abrir el enfriador KOF libremente |
+| **ENREJADO (E)** | Hay reja, mostrador o bloqueo físico que impide el acceso directo al enfriador KOF |
+
+⚠️ **Ojo:** Si la tienda tiene acceso al área comercial pero el enfriador KOF está detrás de la reja/mostrador → también cuenta como **ENREJADO**.
+
+## Los 3 tamaños de cliente
+**Chico (CH) · Mediano (M) · Grande (G)** — El tamaño cambia cuántas puertas, frentes y productos se exigen.
+
+## La tabla maestra de puntos 2026
+
+| Pilar | No Enrejado | Enrejado |
+|---|---:|---:|
+| 🧊 Enfriador | **40** | **52** |
+| 🍾 Portafolio | 22 | 30 |
+| 📢 Activación | 15 | 10 |
+| 👁️ SOVI | 10 | — |
+| 💲 Precios | 8 | 8 |
+| 📍 Métrica local | 5 | — |
+| ⭐ Bono | 10 | 10 |
+| **TOTAL** | **110** | **110** |
+
+**Qué cambió vs 2025 (para que lo expliques):**
+- Enfriador subió +8 pts (NE) y +12 pts (E) → es la prioridad del año
+- Activación subió +5 (NE)
+- Precios bajó −7 (NE)
+- En enrejados desaparece la métrica local
+
+### 📝 Quiz Módulo 0
+1. Una tienda tiene reja, pero puedes entrar; el refri KOF está detrás del mostrador. ¿Enrejado o no enrejado? → **Enrejado**
+2. ¿Cuánto vale el pilar Enfriador en una tienda enrejada? → **52 puntos**
+3. ¿El SOVI se mide en tiendas enrejadas? → **No, solo en no enrejadas**
+
+---
+
+# MÓDULO 1 — 🧊 ENFRIADOR (40 NE / 52 E)
+## El pilar que decide la auditoría
+
+Son 7 indicadores. Piénsalo como una pirámide: primero el equipo (capacidad y posición), luego su contenido (respeto y lleno), y al final la participación (SOCI).
+
+## 1.1 CAPACIDAD FRÍA — NE: 6 pts | E: 10 pts
+**¿Qué pide?** Número mínimo de puertas KOF según tamaño:
+
+| Chico | Mediano | Grande |
+|:---:|:---:|:---:|
+| 1 puerta | 3 puertas | 5 puertas |
+
+**Regla especial Grandes:** 1 de las 5 puertas debe estar **dedicada a empaques personales** y en primera posición. Vale si al menos el **80%** del espacio es personal (la última charola puede llevar familiares).
+
+- Si no llegas al mínimo → puntos **proporcionales**
+- Sin refrigerador KOF → **0 puntos**
+
+## 1.2 PRIMERA POSICIÓN — NE: 5 pts | E: 10 pts
+**¿Qué pide?** Que el enfriador KOF sea **el primero** que encuentra el cliente en el tráfico natural de la tienda (se traza una línea imaginaria desde el marco de la puerta hacia adentro).
+
+**SÍ quitan la primera posición:**
+- Cualquier refri de competencia NARTD, dentro o fuera (Pepsi, Jarritos, Red Cola, Peñafiel, Jumex, Bonafont, Epura, etc.)
+- **Monster y energéticos** (Red Bull, Vive100, Volt, Amper...) ← regla nueva
+- Refris de **cerveza o del tendero** si contienen **75% o más** de bebidas NARTD
+- Refris de **lácteos** (Lala, Alpura) si contienen **50% o más** de NARTD
+
+**NO quitan la primera posición:**
+- Exhibiciones de producto en ambiente (racks, anaqueles)
+- Producto KOF apilado junto al enfriador KOF
+
+**Reglas de desempate:**
+- Si KOF comparte posición con la competencia → gana solo si tiene **igual o más puertas**
+- Tienda con varias entradas → basta con ganar en **una**
+- Enrejados: se evalúa por observación; el refri KOF debe ser visible al menos en un **50%**
+
+## 1.3 RESPETO — NE: 5 pts | E: 10 pts
+**Regla simple: el refri KOF solo lleva producto KOF. Punto.**
+- Un yogurt, un queso, un refresco ajeno, un producto abierto → **se pierden TODOS los puntos**
+- Si hay varios refris KOF, **todos** deben cumplir (uno invadido tira todo)
+
+**Únicas excepciones:**
+- Mostradores refrigerados KOF: 50% KOF / 50% otros (en el espacio definido)
+- Energéticos y ARTDs (ej. Coca-Cola Bacardi, Topo Chico Drinks): máximo **1 cara por puerta**; más que eso = contaminación
+
+## 1.4 LLENO 90% — NE: 6 pts | E: 10 pts
+**¿Qué pide?** Cada refri KOF al **90% de su capacidad** mínimo (se mide por frentes con reconocimiento de imagen).
+- Las invasiones de producto ajeno cuentan como **huecos vacíos**
+- Varios refris → nota proporcional a los que cumplan
+- Un frente cuenta solo si es visible al menos al 50%
+
+## 1.5 – 1.7 SOCI (Colas, Frutales, Stills) — NE: 6+6+6 | E: 4+4+4
+**SOCI = tu participación en el FRÍO de toda la tienda.**
+
+> SOCI = Frentes fríos TCCC ÷ Frentes fríos de toda la industria
+
+Se mide 3 veces (colas, frutales, stills) contra el target de tu zona.
+
+**🎯 Targets KOF VALLE DE MÉXICO:**
+
+| Categoría | Target | Mínimo |
+|---|---:|---:|
+| Colas | **86.5%** | 69.2% |
+| Frutales | **63.1%** | 44.2% |
+| Stills | **57.6%** | 40.3% |
+
+**Categorías que SÍ cuentan para SOCI/SOVI:** refrescos, jugos, agua, isotónicos, té RTD, sueros, leche, leche vegetal.
+**NO cuenta:** energéticos. ❌
+
+💡 **Truco de campo:** El SOCI no se gana solo; se construye con Respeto + Lleno 90%. Un refri lleno y sin invasiones automáticamente sube tu participación en frío.
+
+### 📝 Quiz Módulo 1
+1. Hay un refri de Monster antes que el de KOF, ¿se pierde la primera posición? → **Sí**
+2. El refri KOF está lleno pero tiene 3 latas de Red Bull en una puerta. ¿Pasa respeto? → **No (solo 1 cara por puerta de energético)**
+3. Cliente grande con 5 puertas pero ninguna dedicada a personales → **puntos proporcionales en capacidad fría**
+4. ¿Un refri de cerveza con 80% de refrescos quita la primera posición? → **Sí (es ≥75% NARTD)**
+
+---
+
+# MÓDULO 2 — 🍾 PORTAFOLIO (22 NE / 30 E)
+## Tener los productos correctos, todos al mismo tiempo
+
+## Conceptos que debes dominar
+- **ROL:** grupo de hasta 2 SKUs del mismo tipo de consumo (personal o familiar) y misma retornabilidad. Ejemplo: el rol "CC MS Entry" puede cubrirse con CC 1.35L NR **o** CC 1.75L/3L NR.
+- **IMPERDONABLES CORE:** los SKUs que generan el **50% de los ingresos** de la tienda. Son los que NUNCA pueden faltar.
+- **IMPERDONABLES ESTRATÉGICOS:** roles adicionales por estrategia, agrupados en 3 familias:
+  - 🔴 **Affordability at Scale** (empaques accesibles: entry, retornables, affordable)
+  - ⚫ **Zeros** (Coca-Cola Zero personal y familiar)
+  - 🟢 **Stills** (jugo, agua, isotónicos, flex)
+
+## ¿Cuántos roles estratégicos exige cada tamaño?
+
+| Grande | Mediano | Chico |
+|:---:|:---:|:---:|
+| **15 roles** | **8 roles** | **4 roles** |
+
+**Roles del cliente CHICO (apréndetelos, son solo 4):** CC Familiar RET · Sabores · CC Zero Personal · Stills
+
+**Roles del cliente MEDIANO (8):** CC Familiar RET · CC Personal · Sabores Familiar · Sabores Personal · CCZ Personal · CCZ Familiar · Nutrición · Hidratación
+
+**Reglas de oro:**
+- Máximo 2 SKUs asignados por rol
+- Si un rol estratégico ya está dentro de un core imperdonable → ya cuenta como cubierto (no se duplica)
+
+## ¿Cómo se ganan los puntos? (la lógica de la "coexistencia")
+Hay puntos por tener cada grupo, y un **premio extra por tenerlos TODOS al mismo tiempo** el día de la auditoría:
+
+| Concepto (NE, ejemplo cliente grande) | Pts |
+|---|---:|
+| Cobertura simple roles CORE | 5 |
+| Coexistencia CORE (todos juntos) | 8 |
+| Cobertura simple roles ESTRATÉGICOS | 7 |
+| Coexistencia CORE + ESTRATÉGICOS | 2 |
+| **Total** | **22** |
+
+💡 **Traducción de campo:** No basta con "casi tener todo". El premio gordo (8 pts) es por tener el core COMPLETO simultáneamente. Un solo SKU core faltante te tumba la coexistencia.
+
+📌 El portafolio exacto (qué SKU cubre qué rol) **cambia por región** → consulta siempre el de Valle de México.
+
+### 📝 Quiz Módulo 2
+1. ¿Qué cubre el 50% de los ingresos y no puede faltar? → **Imperdonables CORE**
+2. Cliente chico: ¿cuántos roles estratégicos? → **4**
+3. Tienes 14 de 15 roles estratégicos en un grande, ¿ganas la coexistencia? → **No, es todo o nada**
+
+---
+
+# MÓDULO 3 — 📢 ACTIVACIÓN (15 NE / 10 E)
+## Armar las exhibiciones por ocasión de consumo
+
+**Concepto OBP (Occasion Based Platform):** un espacio de la tienda comunica una ocasión (comer, refrescarse al momento, hidratarse, desayunar) con el portafolio correcto + material POP oficial.
+
+Las 4 plataformas: **COMIDAS · MIS MOMENTOS · HIDRATACIÓN · NUTRICIÓN/DESAYUNOS**
+
+## 3.1 COMIDAS — NE: 8 pts (G/M), 11 pts (CH) | E: 6 pts
+*La ocasión familiar: "para acompañar la comida"*
+
+**Portafolio requerido (mínimo 2 frentes de cada uno):**
+1. Marca Coca-Cola **familiar** (RET, NR y/o 500 VR)
+2. Sabores **familiar** (y/o 500 VR)
+3. Bebidas de fruta **familiar** (y/o 500 VR)
+
+**Frentes totales:** G: 10 | M: 8 | CH: 6
+
+**¿Dónde se ejecuta?**
+- **G y M:** enfriador + rack/anaquel (2 puntos de contacto) **O** puerta dedicada 90% retornable
+- **CH:** 1 punto de contacto (frío o ambiente)
+
+**Comunicación:** G/M: 2 materiales (el de **retornabilidad es obligatorio en frío**) | CH: 1 material
+
+**Reglas extra:**
+- Regla 50/20: el rack de comidas en G/M debe tener 50% frentes de colas RET + 20% de sabores (no aplica si hay puerta retornable)
+- El 100% de los clientes debe tener presencia de **retornabilidad**
+- ⛔ NO se puede activar comidas en un rack dedicado a otra cosa (hidratación, zona de ahorro)
+
+## 3.2 MIS MOMENTOS — NE: 4 pts | E: 4 pts
+*La ocasión individual: "para mí, ahorita"*
+
+**Portafolio requerido (mínimo 2 frentes c/u), SIEMPRE 3 categorías:**
+1. Marca Coca-Cola **personal**
+2. Sabores **personal** (cualquier marca)
+3. Agua **o** Tés **o** Bebida de fruta **personal**
+
+**Frentes:** G: 10 | M: 8 | CH: 6
+
+⚠️ **Esta activación SOLO vale en FRÍO** (enfriador KOF o del tendero).
+
+**Comunicación (materiales oficiales 2025-2026):**
+- NE → G/M: Lexan Mis Momentos **+** Cenefa de mini precios | CH: uno de los dos
+- E → uno de los dos
+
+**Tamaños "personal" para agua:** purificada ≤1.2L · mineral &lt;1L · saborizada ≤1.2L
+**Mandatorio:** 1 frente de empaques **Entry** en el 100% de los clientes.
+
+## 3.3 PLATAFORMA FLEXIBLE — NE solamente: 3 pts (G y M; chico no participa)
+La tienda elige UNA:
+- **HIDRATACIÓN:** Agua (personal/familiar) + Isotónicos + Sueros y/o Tés
+- **DESAYUNOS:** Leche y/o bebidas vegetales + Jugos
+
+**Frentes:** G: 10 | M: 8 · En frío o ambiente · + 1 material en el mismo activo
+Se dan puntos parciales por frentes y por comunicación.
+
+### 📝 Quiz Módulo 3
+1. ¿Mis Momentos se puede armar en un rack en ambiente? → **No, solo en frío**
+2. ¿Cuántos frentes pide Comidas en un cliente mediano? → **8**
+3. ¿Qué plataforma vale más en un cliente chico no enrejado? → **Comidas (11 pts)**
+4. ¿Un chico participa en la plataforma flexible? → **No**
+
+---
+
+# MÓDULO 4 — 💲 PRECIO (8 NE / 8 E)
+## La regla de las 3 condiciones
+
+Cada rol de precio se evalúa con **3 condiciones que deben cumplirse JUNTAS:**
+
+1. **DISPONIBLE** → el producto está en la tienda al momento de la visita
+2. **COMUNICADO** → el precio se ve, en material oficial KOF, al alcance del producto
+3. **CUMPLIDO** → el precio es **igual o menor** al sugerido del periodo
+
+⚠️ Si falla UNA de las tres → se pierden los puntos de **todo ese rol**.
+
+**¿Cuántos roles se evalúan?**
+- Clientes **grandes: 10 roles** (CC personal freq/entry, CC familiar NR/entry/RET, sabores personal y familiar, 2 core stills, CCZ familiar)
+- Clientes **medianos y chicos: 6 roles** (CC personal freq, CC familiar NR, CC familiar RET, sabores familiar, core stills, CCZ personal)
+
+**Reglas del material:**
+- Solo precios en **materiales oficiales KOF**
+- ❌ No cuentan precios escritos a mano
+- ❌ No cuentan materiales dañados o rotos
+- NE: tiras de precio válidas solo en enfriador y/o rack
+- E: válido en banner, tótem, lona, etc.
+
+### 📝 Quiz Módulo 4
+1. Producto disponible, precio correcto, pero escrito con plumón → **0 puntos en ese rol**
+2. ¿El precio puede ser más barato que el sugerido? → **Sí (igual o inferior cumple)**
+3. ¿Cuántos roles de precio evalúan a un cliente chico? → **6**
+
+---
+
+# MÓDULO 5 — 👁️ SOVI (10 pts, SOLO no enrejados)
+## Tu participación en TODO lo visible
+
+Si el SOCI era el frío, el **SOVI es todo el inventario visible** de la tienda: frío + ambiente + exhibiciones.
+
+> SOVI = Frentes totales TCCC ÷ Frentes totales de la industria
+
+| Indicador | Pts |
+|---|---:|
+| SOVI NARTD vs target | 5 |
+| SOVI Frutales vs target | 2.5 |
+| SOVI Stills vs target | 2.5 |
+
+**🎯 Targets KOF VALLE DE MÉXICO:**
+
+| Categoría | Target | Mínimo |
+|---|---:|---:|
+| NARTD total | **68.6%** | 48.0% |
+| Frutales | **62.5%** | 43.8% |
+| Stills | **57.8%** | 40.5% |
+
+**¿Cómo cuenta el auditor las caras? (esto pregúntalo en el quiz del museo):**
+- Botellas acostadas o en canasta → las **tapas cuentan como caras**
+- La **profundidad NO cuenta**; las esquinas se cuentan **una sola vez**
+- Producto en embalaje de origen o cajas plásticas → **NO cuenta** (excepto multipacks)
+- Producto en piso → solo cuenta si está **a granel**
+
+### 📝 Quiz Módulo 5
+1. ¿SOVI incluye lo que está en el enfriador? → **Sí, son frentes TOTALES (frío + ambiente)**
+2. Una reja de Coca llena de producto cerrado en el piso → **No cuenta (no está a granel)**
+3. ¿En enrejados se mide SOVI? → **No**
+
+---
+
+# MÓDULO 6 — 📍 MÉTRICA LOCAL (5 pts, SOLO no enrejados)
+## La activación de temporada
+
+Premia ejecutar la prioridad comercial del momento: **material POP oficial + el producto comunicado disponible**.
+
+**Calendario 2026:**
+
+| Periodo | Activación |
+|---|---|
+| Abril – Julio 2026 | ⚽ **MUNDIAL** |
+| Agosto – Diciembre 2026 | 🎄 **100 AÑOS – NAVIDAD** |
+| Enero – Marzo 2027 | 🚀 **FAST START** |
+
+**¿Qué pide según tamaño?**
+
+| Chico | Mediano | Grande |
+|:---:|:---:|:---:|
+| 1 material + 1 SKU | 2 materiales + 2 SKUs | 3 materiales + 3 SKUs |
+
+Ejemplo Mundial (cliente grande): POP FIFA + CC 600 PET · POP FIFA + Powerade 1L · POP FIFA + CC RET familiar.
+
+- Vale tótem, banner o lona
+- Puntos **parciales** por cada punto de contacto bien ejecutado
+- Al cambiar la temporada → **hay que cambiar los materiales POP**
+
+### 📝 Quiz Módulo 6
+1. ¿Qué activación corre de abril a julio 2026? → **Mundial**
+2. Cliente mediano con 1 solo material FIFA + producto → **puntos parciales**
+3. ¿Aplica en enrejados? → **No (0 pts de métrica local)**
+
+---
+
+# MÓDULO 7 — ⭐ BONOS (10 pts)
+## Puntos extra con candado 🔒
+
+Los bonos premian la proactividad, pero casi todos tienen un **candado**: primero debes cumplir al 100% otra cosa.
+
+## NO ENREJADOS
+
+**🛒 ZONA DE AHORRO — G y M: 5 pts**
+- 🔒 Candado: cumplir **100% Comidas**
+- Punto de contacto **adicional en ambiente** (no suman frentes ya usados en comidas/hidratación/etc.)
+- G: 10 frentes | M: 8 frentes · + 1 material oficial
+- Presencia de 2 "grupos de categoría" (retornables / SSDs familiar-personal entry / portafolio táctico), mínimo 2 frentes por categoría
+- ⚠️ Todo o nada: sin comunicación o sin portafolio = 0
+
+**💧 SEGUNDA PLATAFORMA — G y M: 3 pts | CH: 5 pts**
+- 🔒 Candado: cumplir **100% Mis Momentos + la plataforma flexible**
+- Montas la ocasión que NO usaste: Hidratación (agua + isotónicos + tés/sueros) o Desayunos (leche + jugos)
+- Frentes: G: 10 | M: 8 | CH: 6 · en frío o ambiente · + 1 material · mínimo 2 frentes por categoría
+- Todo o nada (sin puntos parciales)
+
+**🆕 PORTAFOLIO INNOVACIÓN — G y M: 2 pts | CH: 5 pts**
+- 3 empaques definidos, únicamente de **Stills y/o ARTDs**
+- El SKU bono NO debe repetirse con tu core/estratégico
+- Para ganar: CH necesita **1 de 3** · M y G necesitan **2 de 3**
+
+## ENREJADOS
+
+**🆕 PORTAFOLIO INNOVACIÓN — 5 pts** (mismas reglas de arriba)
+
+**🪧 MATERIAL FIJO — 5 pts**
+- 🔒 Candado: cumplir **100% Comidas y Mis Momentos**
+- G: 2 materiales fijos (tótem + preciador) | M y CH: 1 tótem
+- El preciador no vale si solo comunica descuentos; mínimo comunicar los SKUs de la métrica de precio en la zona de transición
+
+### 📝 Quiz Módulo 7
+1. ¿Puedes ganar Zona de Ahorro si Comidas quedó al 80%? → **No, candado al 100%**
+2. Cliente chico enrejado: ¿qué bonos puede ganar? → **Innovación (5) + Material fijo (5)**
+3. ¿Los frentes de la zona de ahorro pueden ser los mismos del rack de comidas? → **No, debe ser incremental**
+
+---
+
+# MÓDULO 8 — 🚶 EL RECORRIDO DEL AUDITOR (práctica final)
+## Así se vive una auditoría, paso a paso
+*(Este es el guion ideal para el museo virtual: cada parada = una sala)*
+
+**PARADA 1 — La banqueta (antes de entrar)**
+- ¿Qué refrigerador de bebidas se ve/alcanza PRIMERO? → Primera Posición
+- ¿Hay refris de competencia, Monster o energéticos afuera? → quitan posición
+- Enrejados: ¿hay tótem/preciador? → Material Fijo · ¿POP de temporada? → Métrica Local
+
+**PARADA 2 — El marco de la puerta**
+- Se traza la línea imaginaria y avanza hacia adentro
+- Tipo de tienda: ¿libre acceso o enrejado? (define toda la ponderación)
+- Tamaño de cliente: CH / M / G
+
+**PARADA 3 — El enfriador KOF (la sala más importante: 40-52 pts)**
+- ✅ ¿Cuántas puertas? (CH:1 / M:3 / G:5 + puerta personales) → Capacidad Fría
+- ✅ ¿Solo producto KOF? ¿Energéticos máx 1 cara/puerta? → Respeto
+- ✅ ¿Está al 90%+ sin huecos ni invasiones? → Lleno 90%
+- ✅ Cuenta mental de frentes fríos propios vs competencia → SOCI (VDM: colas 86.5 / frutales 63.1 / stills 57.6)
+
+**PARADA 4 — El piso de venta**
+- ¿Está el portafolio core completo? ¿Y los roles estratégicos? → Portafolio (la coexistencia es todo-o-nada)
+- ¿Plataforma Comidas armada? (familiares, 2 frentes c/u, retornabilidad, material)
+- ¿Mis Momentos en frío con sus 3 categorías?
+- ¿Flexible (hidratación o desayunos) en G/M?
+- Cuenta de frentes totales propios vs industria → SOVI
+
+**PARADA 5 — La pared de precios**
+- Por cada rol: ¿disponible + comunicado + cumplido? Las 3 juntas
+- ¿Material oficial, sin daños, nada a mano?
+
+**PARADA 6 — Los extras**
+- ¿Zona de ahorro incremental? ¿Segunda plataforma? ¿SKUs de innovación? → Bonos
+
+## ✅ CHECKLIST EXPRÉS (para imprimir o poner al final del recorrido)
+
+| # | Pregunta rápida | Pilar |
+|---|---|---|
+| 1 | ¿KOF es el primer refri (ojo Monster/energéticos)? | Enfriador |
+| 2 | ¿Puertas mínimas según tamaño (1/3/5)? | Enfriador |
+| 3 | ¿Refri 100% KOF y energéticos a 1 cara/puerta? | Enfriador |
+| 4 | ¿Todos los refris al 90%+? | Enfriador |
+| 5 | ¿Frentes fríos ganan al target VDM? | Enfriador |
+| 6 | ¿Core completo HOY (coexistencia)? | Portafolio |
+| 7 | ¿Roles estratégicos (4/8/15)? | Portafolio |
+| 8 | ¿Comidas: 3 familiares, frentes, retornabilidad, material? | Activación |
+| 9 | ¿Mis Momentos EN FRÍO con 3 categorías + entry? | Activación |
+| 10 | ¿Flexible armada (G/M)? | Activación |
+| 11 | ¿Precios: disponible + comunicado + cumplido? | Precio |
+| 12 | ¿Frentes totales ganan al target VDM? | SOVI |
+| 13 | ¿POP de temporada + producto disponible? | M. Local |
+| 14 | ¿Candados cumplidos para activar bonos? | Bonos |
+
+---
+
+# ANEXO A — 🏛️ MAPA SUGERIDO PARA EL MUSEO VIRTUAL
+
+| Sala | Contenido | Módulo |
+|---|---|---|
+| 🚪 Vestíbulo | Las reglas del juego: tipos de tienda, tamaños, tabla de puntos interactiva | 0 |
+| 🧊 Sala del Frío (la grande) | Enfriador con 4 estaciones: posición, respeto, lleno, SOCI. Mini-juego: "¿quita o no quita la 1ª posición?" | 1 |
+| 🍾 Pasillo del Portafolio | Estantes con roles core/estratégicos por tamaño; switch CH/M/G | 2 |
+| 📢 Plaza de las Ocasiones | 4 islas: Comidas, Mis Momentos, Hidratación, Desayunos | 3 |
+| 💲 Muro de Precios | Juego de las 3 condiciones (quita una y mira los puntos caer) | 4 |
+| 👁️ Mirador SOVI | Vista aérea de la tienda contando caras | 5 |
+| 📍 Sala de Temporada | Calendario Mundial → Navidad → Fast Start | 6 |
+| ⭐ Bóveda de Bonos | Puertas con candado que se abren al cumplir requisitos | 7 |
+| 🚶 Recorrido Final | Simulación de auditoría completa con puntaje en vivo | 8 |
+
+---
+
+# ANEXO B — GLOSARIO EXPRÉS
+
+| Término | En cristiano |
+|---|---|
+| PDV | Punto de venta (la tienda) |
+| SKU | Código de producto |
+| ROL | Pareja de hasta 2 SKUs equivalentes (mismo consumo y retornabilidad) |
+| PDC / POC | Punto de contacto (refri, rack, anaquel) |
+| OBP / ODC | Plataforma / ocasión de consumo |
+| NARTD | Bebidas no alcohólicas listas para beber |
+| TCCC | The Coca-Cola Company (todas las marcas propias) |
+| SOCI | Participación en frío |
+| SOVI | Participación en todo lo visible |
+| RET / NR | Retornable / No retornable |
+| MS / SS | Multi-serve (familiar) / Single-serve (personal) |
+| Entry / Freq | Empaque de entrada (barato) / frecuente |
+| Bloque corporativo | 2+ puertas KOF juntas frente a la competencia |
+| AAA | Material POP + producto comunicado presente |
+
+---
+*Curso basado en el Manual ICE Tradicional 2026 (KOF). Los targets mostrados corresponden a KOF Valle de México. El portafolio exacto por rol varía por región: consulta siempre el vigente de tu zona.*
+</script>
+
 <script>
-/* ── WebGL setup ─────────────────────────────────────────────── */
-const canvas = document.getElementById('c');
-const gl = canvas.getContext('webgl');
+/* ── Modal del curso ─────────────────────────────────────────── */
+(function () {
+  const overlay  = document.getElementById('guide-overlay');
+  const body     = document.getElementById('guide-body');
+  const openBtn  = document.getElementById('guide-btn');
+  const closeBtn = document.getElementById('guide-close');
 
-const vert = `
-  attribute vec2 a_pos;
-  void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
-`;
-
-const frag = `
-  precision highp float;
-  uniform float u_time;
-  uniform vec2  u_res;
-  uniform vec2  u_tilt;   /* suavizado: gamma/45, beta/45 */
-
-  /* ── Noise ──────────────────────────────────────────────── */
-  float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-  }
-  float vnoise(vec2 p) {
-    vec2 i = floor(p), f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(
-      mix(hash(i),           hash(i + vec2(1,0)), f.x),
-      mix(hash(i + vec2(0,1)), hash(i + vec2(1,1)), f.x),
-      f.y
-    );
-  }
-  float fbm(vec2 p) {
-    float v = 0.0, a = 0.5;
-    for (int i = 0; i < 6; i++) {
-      v += a * vnoise(p);
-      p  = p * 2.07 + vec2(1.7, 9.2);
-      a *= 0.5;
+  openBtn.addEventListener('click', () => {
+    overlay.classList.add('open');
+    if (!body.innerHTML) {
+      const md = document.getElementById('md-course').textContent;
+      body.innerHTML = marked.parse(md);
     }
-    return v;
-  }
-
-  void main() {
-    /* Centro normalizado */
-    vec2 uv = (gl_FragCoord.xy - u_res * 0.5) / min(u_res.x, u_res.y);
-
-    float t = u_time * 0.32;
-
-    /* El líquido "cae" hacia donde inclinas */
-    vec2 pour = u_tilt * 0.45;
-
-    /* ── Warping en 3 capas (líquido espeso) ──────────────── */
-    vec2 p = uv - pour;
-
-    vec2 q = vec2(
-      fbm(p * 2.1  + vec2(0.00, t * 0.9)),
-      fbm(p * 2.1  + vec2(5.20, 1.3 + t * 0.7))
-    );
-
-    vec2 r = vec2(
-      fbm(p + 3.8 * q + vec2(1.70, 9.20) + t * 0.22),
-      fbm(p + 3.8 * q + vec2(8.30, 2.80) + t * 0.18)
-    );
-
-    float f = fbm(p + 4.2 * r);
-
-    /* ── Ondas de superficie reactivas al tilt ───────────── */
-    float tiltLen = length(u_tilt);
-    vec2  tiltDir = tiltLen > 0.01
-                    ? normalize(u_tilt)
-                    : vec2(1.0, 0.0);
-    float ripple  = sin(dot(uv - pour, tiltDir) * 18.0 - t * 4.5)
-                    * 0.035 * tiltLen;
-    f += ripple;
-
-    /* ── Reflejos tipo cáustica (zonas muy brillantes) ───── */
-    float caustic = pow(max(0.0, 1.0 - abs(f - 0.52) * 8.0), 4.0);
-
-    /* ── Luminosidad final B&W ────────────────────────────── */
-    float lum = smoothstep(0.22, 0.78, f) + caustic * 0.45;
-    lum = clamp(lum, 0.0, 1.0);
-
-    gl_FragColor = vec4(vec3(lum), 1.0);
-  }
-`;
-
-function compile(type, src) {
-  const s = gl.createShader(type);
-  gl.shaderSource(s, src);
-  gl.compileShader(s);
-  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
-    console.error(gl.getShaderInfoLog(s));
-  return s;
-}
-
-const prog = gl.createProgram();
-gl.attachShader(prog, compile(gl.VERTEX_SHADER,   vert));
-gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, frag));
-gl.linkProgram(prog);
-gl.useProgram(prog);
-
-const buf = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-gl.bufferData(gl.ARRAY_BUFFER,
-  new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-
-const aPos  = gl.getAttribLocation(prog, 'a_pos');
-gl.enableVertexAttribArray(aPos);
-gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-
-const uTime = gl.getUniformLocation(prog, 'u_time');
-const uRes  = gl.getUniformLocation(prog, 'u_res');
-const uTilt = gl.getUniformLocation(prog, 'u_tilt');
-
-function resize() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  gl.viewport(0, 0, canvas.width, canvas.height);
-}
-window.addEventListener('resize', resize);
-resize();
-
-/* ── Tilt suavizado con inercia ──────────────────────────────── */
-let tx = 0, ty = 0;        /* valor actual suavizado */
-let gx = 0, gy = 0;        /* objetivo crudo         */
-const LERP = 0.055;        /* más bajo = más inercia */
-
-/* Fallback ratón / touch en desktop */
-window.addEventListener('mousemove', e => {
-  gx = (e.clientX / window.innerWidth  - 0.5) *  2.0;
-  gy = (e.clientY / window.innerHeight - 0.5) * -2.0;
-});
-
-/* ── Giroscopio ──────────────────────────────────────────────── */
-const tap = document.getElementById('tap');
-
-function enableGyro() {
-  window.addEventListener('deviceorientation', e => {
-    /* gamma: inclinación izquierda/derecha  (-90..90)
-       beta:  inclinación adelante/atrás     (-180..180) */
-    gx =  (e.gamma || 0) / 45;
-    gy = -(e.beta  || 0) / 45;
   });
-  tap.classList.add('gone');
+
+  closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+  document.getElementById('guide-close-bottom').addEventListener('click', () => overlay.classList.remove('open'));
+
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') overlay.classList.remove('open');
+  });
+})();
+</script>
+
+<script>
+/* ── WebGL — shader de mármol ────────────────────────────────── */
+(function () {
+  const canvas = document.getElementById('c');
+  const gl = canvas.getContext('webgl', { antialias: false });
+  if (!gl) { document.body.style.background = '#1b1b1d'; return; }
+
+  const vertSrc = 'attribute vec2 a_pos; void main(){ gl_Position = vec4(a_pos,0.0,1.0); }';
+
+  const fragSrc = `
+precision highp float;
+
+uniform vec2  u_resolution;
+uniform float u_time;
+
+float hash(vec2 p) {
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
 }
 
-tap.addEventListener('click', () => {
-  if (typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function') {
-    /* iOS 13+ necesita permiso explícito */
-    DeviceOrientationEvent.requestPermission()
-      .then(state => { if (state === 'granted') enableGyro(); })
-      .catch(console.warn);
-  } else {
-    enableGyro();
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  float a = hash(i);
+  float b = hash(i + vec2(1.0, 0.0));
+  float c = hash(i + vec2(0.0, 1.0));
+  float d = hash(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(vec2 p) {
+  float v = 0.0;
+  float amp = 0.5;
+  mat2 rot = mat2(0.8, -0.6, 0.6, 0.8);
+  for (int i = 0; i < 6; i++) {
+    v += amp * noise(p);
+    p = rot * p * 2.05 + vec2(13.7, 7.1);
+    amp *= 0.5;
   }
-});
-
-/* En Android el permiso no es necesario — activar automático */
-if (typeof DeviceOrientationEvent !== 'undefined' &&
-    typeof DeviceOrientationEvent.requestPermission !== 'function') {
-  enableGyro();
+  return v;
 }
 
-/* ── Loop de render ──────────────────────────────────────────── */
-function frame(ts) {
-  /* Lerp para inercia de líquido */
-  tx += (gx - tx) * LERP;
-  ty += (gy - ty) * LERP;
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+  vec2 p  = uv;
+  p.x *= u_resolution.x / u_resolution.y;
 
-  gl.uniform1f(uTime, ts * 0.001);
-  gl.uniform2f(uRes, canvas.width, canvas.height);
-  gl.uniform2f(uTilt, tx, ty);
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  requestAnimationFrame(frame);
+  float t = u_time * 0.015;
+
+  vec2 q = vec2(fbm(p * 2.2 + t),
+                fbm(p * 2.2 + vec2(5.2, 1.3) - t));
+  vec2 r = vec2(fbm(p * 2.2 + 3.0 * q + vec2(1.7, 9.2)),
+                fbm(p * 2.2 + 3.0 * q + vec2(8.3, 2.8)));
+  float clouds = fbm(p * 2.2 + 2.5 * r);
+
+  float veinField = fbm(p * 3.5 + 4.0 * q + 2.0);
+  float vein  = 1.0 - smoothstep(0.0, 0.16,
+                  abs(sin((p.x + p.y) * 2.0 + veinField * 14.0)));
+  float vein2 = 1.0 - smoothstep(0.0, 0.10,
+                  abs(sin(p.y * 3.0 - veinField * 18.0 + 3.1)));
+  float veins = clamp(vein * 0.8 + vein2 * 0.5, 0.0, 1.0);
+  veins *= smoothstep(0.25, 0.75, clouds);
+
+  vec3 dark  = vec3(0.12, 0.12, 0.13);
+  vec3 mid   = vec3(0.42, 0.42, 0.44);
+  vec3 light = vec3(0.72, 0.72, 0.74);
+
+  vec3 col = mix(mid, light, smoothstep(0.35, 0.85, clouds));
+  col = mix(col, dark * 1.6, smoothstep(0.6, 0.2, clouds) * 0.55);
+  col = mix(col, dark, veins);
+
+  float spark = smoothstep(0.78, 0.95, fbm(p * 6.0 - 2.0 * r));
+  col += spark * 0.12;
+
+  float vig = smoothstep(1.25, 0.45, length(uv - 0.5));
+  col *= mix(0.85, 1.0, vig);
+
+  gl_FragColor = vec4(col, 1.0);
 }
-requestAnimationFrame(frame);
+  `;
+
+  function compile(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
+      console.error(gl.getShaderInfoLog(s));
+    return s;
+  }
+
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER,   vertSrc));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fragSrc));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER,
+    new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  const uRes  = gl.getUniformLocation(prog, 'u_resolution');
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width  = Math.floor(innerWidth  * dpr);
+    canvas.height = Math.floor(innerHeight * dpr);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const start = performance.now();
+
+  function frame() {
+    const t = (performance.now() - start) / 1000;
+    gl.uniform2f(uRes,  canvas.width, canvas.height);
+    gl.uniform1f(uTime, reduceMotion ? 0.0 : t);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    if (!reduceMotion) requestAnimationFrame(frame);
+  }
+  frame();
+})();
 </script>
 </body>
 </html>

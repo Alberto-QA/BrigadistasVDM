@@ -102,7 +102,7 @@ const scene = new THREE.Scene();
 
 /* ── Cámara primera persona ───────────────────────────────────── */
 const cam = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 3000);
-cam.position.set(0, 1.7, 8);
+cam.position.set(0, 1.7, 0);
 
 /* ── Luces ────────────────────────────────────────────────────── */
 scene.add(new THREE.AmbientLight(0xc8d8ff, 0.8));
@@ -110,8 +110,10 @@ scene.add(new THREE.AmbientLight(0xc8d8ff, 0.8));
 const sun = new THREE.DirectionalLight(0xfff6e0, 2.2);
 sun.position.set(60, 90, -50);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, { left: -80, right: 80, top: 80, bottom: -80, near: 0.5, far: 400 });
+sun.shadow.mapSize.set(4096, 4096);
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.02;
+Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 40, bottom: -40, near: 0.5, far: 200 });
 scene.add(sun);
 
 const fill = new THREE.DirectionalLight(0x88aaf0, 0.4);
@@ -165,6 +167,11 @@ scene.add(skyMesh);
 
 /* ── Carga del modelo GLB ─────────────────────────────────────── */
 let floorY = 0;
+let collidable = [];
+let modelBounds = null;
+const colRay = new THREE.Raycaster();
+colRay.far = 0.5;
+const _colDir = new THREE.Vector3();
 
 new GLTFLoader().load(
   'Modelos3D/EscuelaDeEpica.glb',
@@ -177,14 +184,14 @@ new GLTFLoader().load(
 
     mdl.scale.setScalar(sc);
     mdl.position.set(-cen.x * sc, -box.min.y * sc, -cen.z * sc);
-    mdl.traverse(c => { if (c.isMesh) { c.castShadow = c.receiveShadow = true; } });
+    mdl.traverse(c => { if (c.isMesh) { c.castShadow = c.receiveShadow = true; collidable.push(c); } });
     scene.add(mdl);
 
     /* Posición inicial de la cámara frente al modelo */
     const sb = new THREE.Box3().setFromObject(mdl);
     floorY = sb.min.y;
-    const mc = sb.getCenter(new THREE.Vector3());
-    cam.position.set(mc.x, floorY + 1.7, sb.max.z + 3.5);
+    modelBounds = sb.clone();
+    cam.position.y = floorY + 0.85;
 
     document.getElementById('loading').style.display = 'none';
     setTimeout(() => document.getElementById('hint').classList.add('gone'), 5500);
@@ -306,11 +313,21 @@ function frame(ts) {
     _move.set(mx, 0, mz);
     if (_move.length() > 1) _move.normalize();
     _move.applyAxisAngle(_yAxis, yaw);
-    cam.position.addScaledVector(_move, SPEED * dt);
+    _colDir.copy(_move).normalize();
+    colRay.set(cam.position, _colDir);
+    if (colRay.intersectObjects(collidable, false).length === 0) {
+      cam.position.addScaledVector(_move, SPEED * dt);
+    }
+  }
+
+  /* Mantener dentro del bounding box del modelo */
+  if (modelBounds) {
+    cam.position.x = THREE.MathUtils.clamp(cam.position.x, modelBounds.min.x, modelBounds.max.x);
+    cam.position.z = THREE.MathUtils.clamp(cam.position.z, modelBounds.min.z, modelBounds.max.z);
   }
 
   /* Mantener altura de ojos constante */
-  cam.position.y = floorY + 1.7;
+  cam.position.y = floorY + 0.85;
 
   /* Cielo sigue a la cámara */
   skyMesh.position.copy(cam.position);
