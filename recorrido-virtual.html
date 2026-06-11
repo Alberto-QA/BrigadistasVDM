@@ -38,6 +38,26 @@
     }
     #hint.gone { opacity: 0; }
 
+    #welcome {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 150; pointer-events: none;
+      max-width: min(560px, 86vw);
+      padding: 26px 38px; border-radius: 18px;
+      background: rgba(0, 13, 31, 0.78);
+      border: 1px solid rgba(120, 190, 255, 0.45);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 50px rgba(40, 130, 255, 0.30);
+      color: #fff; text-align: center;
+      font: 600 1.15rem/1.55 system-ui, sans-serif;
+      letter-spacing: 0.03em;
+      opacity: 0; transition: opacity 1.6s ease;
+    }
+    #welcome.show { opacity: 1; }
+    @media (max-width: 480px) {
+      #welcome { font-size: 0.98rem; padding: 20px 24px; }
+    }
+
     /* Joystick izquierdo */
     #joy {
       position: fixed; bottom: 28px; left: 28px; z-index: 60;
@@ -65,6 +85,7 @@
 
 <a href="epicasice.html" id="back">← Salir</a>
 <div id="hint">ARRASTRA LA PANTALLA DERECHA PARA MIRAR</div>
+<div id="welcome">Bienvenido al recorrido virtual, mueve el joystick y avanza para ver el lugar.</div>
 <div id="joy"><div id="joy-k"></div></div>
 
 <script type="importmap">
@@ -108,7 +129,7 @@ cam.position.set(0, 1.7, 0);
 scene.add(new THREE.AmbientLight(0xc8d8ff, 0.8));
 
 const sun = new THREE.DirectionalLight(0xfff6e0, 2.2);
-sun.position.set(60, 90, -50);
+sun.position.set(0, 110, 0);
 sun.castShadow = true;
 sun.shadow.mapSize.set(4096, 4096);
 sun.shadow.bias = -0.0004;
@@ -151,7 +172,7 @@ const skyMesh = new THREE.Mesh(
           col = mix(hz, gnd, clamp(-h * 5.0, 0.0, 1.0));
         }
         /* Sol */
-        vec3 sunDir = normalize(vec3(0.50, 0.70, -0.50));
+        vec3 sunDir = vec3(0.0, 1.0, 0.0);
         float sd = dot(d, sunDir);
         col += vec3(1.00, 0.92, 0.70) * pow(max(sd, 0.0), 7.0) * 0.30;
         col += vec3(1.00, 0.97, 0.88) * smoothstep(0.9997, 1.0, sd) * 4.0;
@@ -195,6 +216,14 @@ new GLTFLoader().load(
 
     document.getElementById('loading').style.display = 'none';
     setTimeout(() => document.getElementById('hint').classList.add('gone'), 5500);
+
+    /* Letrero de bienvenida: aparece al entrar y se desvanece solo */
+    const welcome = document.getElementById('welcome');
+    requestAnimationFrame(() => welcome.classList.add('show'));
+    setTimeout(() => {
+      welcome.classList.remove('show');
+      setTimeout(() => welcome.remove(), 1800);
+    }, 5000);
   },
   xhr => {
     if (xhr.total)
