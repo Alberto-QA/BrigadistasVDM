@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1200">
+  <title>Calculadoras de Pago</title>
+  <style>
+    * { margin:0; padding:0; -webkit-box-sizing:border-box; box-sizing:border-box; }
+    html, body {
+      min-height:100%; font-family:Arial,Helvetica,sans-serif;
+      overflow-x:hidden; background:#140e00;
+    }
+    #bg { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+    .container {
+      position:relative; z-index:1;
+      display:flex; flex-direction:column; align-items:center;
+      padding:26px 14px 50px; min-height:100vh; width:100%;
+    }
+    h1 {
+      color:#fff; font-size:1.35rem; font-weight:bold; text-align:center;
+      text-shadow:0 0 20px rgba(255,200,40,0.95), 0 2px 4px rgba(0,0,0,0.9);
+      margin-bottom:24px; padding:14px 20px;
+      background:rgba(0,0,0,0.5); border-radius:12px;
+      border:1px solid rgba(255,200,40,0.5);
+      max-width:420px; width:100%;
+    }
+
+    .card {
+      width:100%; max-width:420px;
+      background:rgba(28,20,2,0.92);
+      border:1.5px solid rgba(255,196,30,0.7);
+      border-radius:16px;
+      padding:18px 16px 20px;
+      margin-bottom:20px;
+      box-shadow:0 8px 26px rgba(0,0,0,0.6), 0 0 22px rgba(255,180,20,0.18);
+    }
+    .card-title {
+      color:#ffd84a; font-size:1.02rem; font-weight:bold;
+      text-align:center; line-height:1.35; margin-bottom:4px;
+      text-shadow:0 0 10px rgba(255,200,40,0.55);
+    }
+    .card-sub {
+      color:#c9b87a; font-size:0.78rem; text-align:center;
+      margin-bottom:16px;
+    }
+
+    .field-label {
+      display:block; color:#f2e4b0; font-size:0.85rem;
+      font-weight:bold; margin-bottom:7px;
+    }
+    .input-wrap { position:relative; margin-bottom:16px; }
+    .input-wrap input {
+      width:100%; padding:15px 42px 15px 16px;
+      font-size:1.25rem; font-weight:bold; color:#fff5d6;
+      background:rgba(0,0,0,0.55);
+      border:1.5px solid rgba(255,196,30,0.6);
+      border-radius:11px; outline:none;
+      -webkit-appearance:none; appearance:none;
+      transition:border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-wrap input:focus {
+      border-color:rgba(255,220,80,1);
+      box-shadow:0 0 0 3px rgba(255,200,40,0.22);
+    }
+    .input-wrap .unit {
+      position:absolute; right:15px; top:50%; transform:translateY(-50%);
+      color:#d9c477; font-size:1.05rem; font-weight:bold; pointer-events:none;
+    }
+
+    /* Pantalla de resultado tipo display */
+    .screen {
+      margin-top:4px;
+      background:linear-gradient(180deg, rgba(20,14,0,0.95), rgba(8,6,0,0.95));
+      border:1.5px solid rgba(255,196,30,0.55);
+      border-radius:11px;
+      padding:14px 16px;
+      text-align:center;
+    }
+    .screen-label {
+      color:#bda85f; font-size:0.72rem; text-transform:uppercase;
+      letter-spacing:1px; margin-bottom:4px;
+    }
+    .screen-value {
+      color:#ffd24a; font-size:2.1rem; font-weight:bold;
+      font-family:'Courier New', monospace; line-height:1.1;
+      text-shadow:0 0 14px rgba(255,200,40,0.85);
+    }
+    .screen-note {
+      color:#c79a6a; font-size:0.74rem; margin-top:5px; min-height:0.9em;
+    }
+
+    .btn-back {
+      display:block; width:100%; max-width:420px;
+      text-align:center; padding:16px 12px; border-radius:12px;
+      text-decoration:none; font-weight:bold; font-size:0.95rem; color:#fff;
+      background:rgba(40,28,2,0.92);
+      border:1.5px solid rgba(255,196,30,0.55);
+      margin-top:4px; -webkit-tap-highlight-color:transparent;
+    }
+    .btn-back:active { opacity:0.75; }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  <div class="container">
+    <h1>💸 Calculadoras de Pago</h1>
+
+    <!-- ============ CALCULADORA 1 ============ -->
+    <div class="card">
+      <div class="card-title">Pago Ejecución · Calificación EPICApp</div>
+      <div class="card-sub">Ingresa la calificación (60 – 100)</div>
+
+      <label class="field-label" for="calif">Calificación</label>
+      <div class="input-wrap">
+        <input id="calif" type="number" inputmode="decimal" placeholder="Ej. 85" min="0" max="100">
+        <span class="unit">pts</span>
+      </div>
+
+      <div class="screen">
+        <div class="screen-label">% de Pago</div>
+        <div class="screen-value" id="out-calif">—</div>
+        <div class="screen-note" id="note-calif"></div>
+      </div>
+    </div>
+
+    <!-- ============ CALCULADORA 2 ============ -->
+    <div class="card">
+      <div class="card-title">Pago · Clientes únicos Evaluados</div>
+      <div class="card-sub">Ingresa el alcance % (85% – &gt;125%)</div>
+
+      <label class="field-label" for="alcance">Alcance</label>
+      <div class="input-wrap">
+        <input id="alcance" type="number" inputmode="decimal" placeholder="Ej. 100" min="0">
+        <span class="unit">%</span>
+      </div>
+
+      <div class="screen">
+        <div class="screen-label">% de Pago</div>
+        <div class="screen-value" id="out-alcance">—</div>
+        <div class="screen-note" id="note-alcance"></div>
+      </div>
+    </div>
+
+    <a href="inicio.html" class="btn-back">← Regresar</a>
+  </div>
+
+  <script>
+    /* ===================== TABLAS DE PAGO ===================== */
+
+    /* Tabla 1: Calificación EPICApp (60–100) -> % Pago */
+    var TABLA_CALIF = {
+      60:10, 61:14, 62:17, 63:21, 64:24, 65:28, 66:32, 67:35, 68:39, 69:42,
+      70:46, 71:50, 72:53, 73:57, 74:60, 75:64, 76:68, 77:71, 78:75, 79:78,
+      80:82, 81:86, 82:89, 83:93, 84:96, 85:100, 86:107, 87:113, 88:120, 89:127,
+      90:133, 91:140, 92:147, 93:153, 94:160, 95:167, 96:173, 97:180, 98:187, 99:193,
+      100:200
+    };
+
+    /* Tabla 2: Alcance % (Clientes únicos) -> Pago % (escalonada) */
+    var TABLA_ALCANCE = [
+      [85,30],[86,31],[87,32],[88,33],[89,34],[90,36],[91,38],[92,40],[93,44],[94,48],
+      [95,53],[96,59],[97,66],[98,74],[99,85],[100,100],[101,104],[102,108],[103,112],
+      [104,116],[105,120],[106,123],[107,126],[108,129],[109,132],[110,135],[112,137],
+      [115,138],[120,139]
+    ];
+
+    /* ===================== LÓGICA ===================== */
+
+    function calcCalif(v) {
+      if (isNaN(v) || v === null) return null;
+      var k = Math.round(v);
+      if (k < 60) return { pago: 0, note: 'Sin pago (calificación menor a 60)' };
+      if (k > 100) return { pago: 200, note: 'Tope máximo (100 pts = 200%)' };
+      return { pago: TABLA_CALIF[k], note: 'Calificación ' + k + ' pts' };
+    }
+
+    function calcAlcance(v) {
+      if (isNaN(v) || v === null) return null;
+      if (v < 85) return { pago: 0, note: 'Sin pago (alcance menor a 85%)' };
+      if (v > 125) return { pago: 140, note: 'Mayor a 125% → tope 140%' };
+      var pago = TABLA_ALCANCE[0][1];
+      var ref = TABLA_ALCANCE[0][0];
+      for (var i = 0; i < TABLA_ALCANCE.length; i++) {
+        if (TABLA_ALCANCE[i][0] <= v) { pago = TABLA_ALCANCE[i][1]; ref = TABLA_ALCANCE[i][0]; }
+        else break;
+      }
+      var nota = (Math.round(v) === ref) ? 'Alcance ' + ref + '%' : 'Tramo desde ' + ref + '%';
+      return { pago: pago, note: nota };
+    }
+
+    function bind(inputId, outId, noteId, fn) {
+      var inp = document.getElementById(inputId);
+      var out = document.getElementById(outId);
+      var note = document.getElementById(noteId);
+      function update() {
+        if (inp.value.trim() === '') { out.textContent = '—'; note.textContent = ''; return; }
+        var res = fn(parseFloat(inp.value));
+        if (!res) { out.textContent = '—'; note.textContent = ''; return; }
+        out.textContent = res.pago + '%';
+        note.textContent = res.note || '';
+      }
+      inp.addEventListener('input', update);
+      update();
+    }
+
+    bind('calif', 'out-calif', 'note-calif', calcCalif);
+    bind('alcance', 'out-alcance', 'note-alcance', calcAlcance);
+
+    /* ===================== SHADER FONDO (amarillo) ===================== */
+    (function () {
+      var canvas = document.getElementById('bg');
+      var gl = null;
+      try { gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl'); } catch (e) {}
+      if (!gl) { canvas.style.display = 'none'; return; }
+
+      var VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.0,1.0);}';
+
+      /* Mismas cáusticas con domain warping que inicio.html, paleta dorada */
+      var FS = [
+        'precision mediump float;',
+        'uniform float u_t;',
+        'uniform vec2  u_r;',
+        'vec2 fw(vec2 p, float s, float t){',
+        '  float inv = 0.3 / s;',
+        '  return p + vec2(',
+        '    (sin(p.y*s + t + 1.30) + sin(p.x*s*0.6 + t*0.70)) * inv,',
+        '    (sin(p.x*s - t*0.90 + 2.10) + sin(p.y*s*0.6 - t*0.60)) * inv',
+        '  );',
+        '}',
+        'void main(){',
+        '  vec2 uv = gl_FragCoord.xy / u_r * 2.0 - 1.0;',
+        '  uv.x *= u_r.x / u_r.y;',
+        '  float t = u_t * 0.14;',
+        '  vec2 p = uv;',
+        '  p = fw(p, 1.2, t);',
+        '  p = fw(p, 2.0, t);',
+        '  p = fw(p, 3.5, t);',
+        '  p = fw(p, 5.5, t);',
+        '  p = fw(p, 8.0, t);',
+        '  float cx = abs(sin(p.x * 2.8));',
+        '  float cy = abs(sin(p.y * 2.8));',
+        '  float raw = cx * cy;',
+        '  float ii  = pow(raw, 0.42);',
+        '  vec3 dark   = vec3(0.07, 0.04, 0.00);',
+        '  vec3 amber  = vec3(0.55, 0.32, 0.02);',
+        '  vec3 gold   = vec3(0.96, 0.72, 0.08);',
+        '  vec3 bright = vec3(1.00, 0.96, 0.66);',
+        '  vec3 col = mix(dark,  amber,  ii * 0.85);',
+        '  col      = mix(col,   gold,   pow(ii, 1.8) * 1.3);',
+        '  col      = mix(col,   bright, pow(ii, 5.0) * 0.55);',
+        '  float dist = length(uv);',
+        '  float vig  = 1.0 - clamp(dist * 0.82, 0.0, 1.0);',
+        '  vig = pow(vig, 1.9);',
+        '  col *= vig;',
+        '  gl_FragColor = vec4(col, 1.0);',
+        '}'
+      ].join('\n');
+
+      function sh(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
+      var prog = gl.createProgram();
+      gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
+      gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+      gl.linkProgram(prog); gl.useProgram(prog);
+
+      var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+      var aPos = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+      var uT = gl.getUniformLocation(prog, 'u_t'), uR = gl.getUniformLocation(prog, 'u_r');
+
+      function resize() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        var w = Math.min(Math.floor(window.innerWidth  * dpr), 1080);
+        var h = Math.min(Math.floor(window.innerHeight * dpr), 1920);
+        canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); gl.uniform2f(uR, w, h);
+      }
+      resize(); window.addEventListener('resize', resize);
+
+      var last = 0, FRAME_MS = 1000 / 30;
+      function draw(ts) {
+        if (ts - last >= FRAME_MS) { last = ts; gl.uniform1f(uT, ts * 0.001); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); }
+        requestAnimationFrame(draw);
+      }
+      requestAnimationFrame(draw);
+    })();
+  </script>
+</body>
+</html>
